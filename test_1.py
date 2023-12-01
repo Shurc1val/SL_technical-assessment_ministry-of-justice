@@ -21,7 +21,7 @@ VALID_TIME_FORMAT = "%H:%M:%S"
 def get_message_from_line(line: str) -> str:
     """
     Function to return message from given line, or an empty string if there is no message (or if
-    the message is just white space);
+    the message is just white space).
     """
     if not " :" in line:
         return ""
@@ -31,12 +31,6 @@ def get_message_from_line(line: str) -> str:
         return ""
     
     return ":" + message
-
-
-def get_timestamp_from_line(line: str) -> str:
-    """
-    
-    """
 
 
 def validate_timestamp(date_string: str, time_string: str) -> bool:
@@ -52,44 +46,59 @@ def validate_timestamp(date_string: str, time_string: str) -> bool:
         return False
 
 
-def is_log_line(line):
+def get_timestamp_from_line(fields: list[str]) -> str:
     """
-    Takes a log line and returns True if it is a valid log line and returns nothing if it is not;
+    Function to find date and time from the given data fields (assuming time follows date exactly),
+    remove them from the list, and return a combined (string) timestamp;
+
+    If no valid date and time are found, None is returned.
     """
-
-    if not get_message_from_line(line):
-        return None
-    
-    fields = line.split(" :")[0].split(" ")
-
-
-    
-    # Check there is a valid timestamp - we don't care where, but time must follow date
     count = 0
-    bln_criterion_met = False
-    while not bln_criterion_met:
+    while count < len(fields) - 1:
         date = fields[count]
         time = fields[count+1]
         if validate_timestamp(date, time):
             bln_criterion_met = True
             fields.remove(date)
             fields.remove(time)
-        elif count == len(fields) - 2:
-            print('a')
-            return None
+            return date + " " + time
         count += 1
-        
-    # Check there is a valid logging level given - we don't care where
+
+    return None
+
+
+def get_logging_level_from_line(fields: list[str]) -> str:
+    """
+    Function to find, remove and return the logging level from the given data fields; returns None
+    if no valid level is found.
+    """
     count = 0
-    bln_criterion_met = False
-    while not bln_criterion_met:
+    while count < len(fields):
         if fields[count] in VALID_LOG_LEVELS:
-            bln_criterion_met = True
-            fields.remove(fields[count])
-        elif count == len(fields) - 1:
-            return None
+            logging_level = fields[count]
+            fields.remove(logging_level)
+            return logging_level
         count += 1
-        
+    return None
+
+
+def is_log_line(line):
+    """
+    Takes a log line and returns True if it is a valid log line and returns nothing if it is not;
+    """
+    line = line.strip()
+
+    if not get_message_from_line(line):
+        return None
+
+    fields = line.split(" :")[0].split(" ")
+    
+    if not get_timestamp_from_line(fields):
+        return None
+
+    if not get_logging_level_from_line(fields):
+        return None
+
     # Checks if there are fields other than timestamp and logging level before message
     if fields.count("") != len(fields):
         return None
@@ -106,8 +115,21 @@ def get_dict(line):
     """Takes a log line and returns a dict with
     `timestamp`, `log_level`, `message` keys
     """
-    message = " :".join(line.split(" :")[1:])
-    pass
+    line = line.strip()
+
+    message = get_message_from_line(line)
+    
+    fields = line.split(" :")[0].split(" ")
+
+    timestamp = get_timestamp_from_line(fields)
+
+    logging_level = get_logging_level_from_line(fields)
+
+    return {
+        "timestamp": timestamp,
+        "log_level": logging_level,
+        "message": message
+    }
 
 
 # YOU DON'T NEED TO CHANGE ANYTHING BELOW THIS LINE
