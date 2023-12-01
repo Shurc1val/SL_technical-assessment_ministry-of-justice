@@ -2,3 +2,5 @@
 *.log
 tests/*
 /tests/*
+venv/*
+/venv

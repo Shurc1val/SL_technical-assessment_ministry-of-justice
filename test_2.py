@@ -69,6 +69,53 @@
 # - the dx_number (if available) of the nearest court of the right type
 # - the distance to the nearest court of the right type
 
+import pandas as pd
+import requests
+
+PEOPLE_CSV_FILE = "people.csv"
+API_URL = "https://www.find-court-tribunal.service.gov.uk/search/results.json?postcode={}"
+
+
+def get_nearest_courts_from_API(postcode: str) -> list[dict]:
+    """
+    Returns list of dicts of nearest courts to a given postcode from courts and tribunals finder
+    API; if error in getting data from API, an empty list is returned.
+    """
+    response = requests.get(API_URL.format(postcode))
+    if response.status_code != 200:
+        return []
+    return response.json()
+
+
+def format_court_data(type: str, courts: list[dict]):
+    """
+    Removes any courts which do not have the desired type, and leaves only the fields name,
+    dx_number and distance for each court dictionary.
+    """
+    courts_to_remove = []
+    for i, court in enumerate(courts):
+        if (type not in court.get("types", [])) or (court.get("distance", None) is None):
+            courts_to_remove.append(court)
+        else:
+            courts[i] = {
+                "name": court.get("name", ""),
+                "dx_number": court.get("dx_number", ""),
+                "distance": court['distance']
+            }
+    for court in courts_to_remove:
+        courts.remove(court)
+
+
+
 if __name__ == "__main__":
     # [TODO]: write your answer here
-    pass
+    people = pd.read_csv(PEOPLE_CSV_FILE).to_dict(orient = 'records')
+    for person in people:
+        nearest_courts = get_nearest_courts_from_API(person['home_postcode'])
+        format_court_data(person['looking_for_court_type'], nearest_courts)
+        person['nearest_court'] = nearest_courts[0]
+    
+    for person in people:
+        print(person)
+
+    print(pd.DataFrame.from_dict(people))
