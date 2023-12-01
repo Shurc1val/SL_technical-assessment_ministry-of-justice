@@ -69,11 +69,17 @@
 # - the dx_number (if available) of the nearest court of the right type
 # - the distance to the nearest court of the right type
 
-import pandas as pd
+from csv import DictReader
 import requests
 
 PEOPLE_CSV_FILE = "people.csv"
 API_URL = "https://www.find-court-tribunal.service.gov.uk/search/results.json?postcode={}"
+
+
+def read_csv(filename: str) -> list[dict]:
+    """Function to read a csv with the given filename to a list of dicts."""
+    with open(filename, 'r', encoding='utf-8') as file:
+        return list(DictReader(file))
 
 
 def get_nearest_courts_from_API(postcode: str) -> list[dict]:
@@ -108,8 +114,7 @@ def format_court_data(type: str, courts: list[dict]):
 
 
 if __name__ == "__main__":
-    # [TODO]: write your answer here
-    people = pd.read_csv(PEOPLE_CSV_FILE).to_dict(orient = 'records')
+    people = read_csv(PEOPLE_CSV_FILE)
     for person in people:
         nearest_courts = get_nearest_courts_from_API(person['home_postcode'])
         format_court_data(person['looking_for_court_type'], nearest_courts)
@@ -117,5 +122,3 @@ if __name__ == "__main__":
     
     for person in people:
         print(person)
-
-    print(pd.DataFrame.from_dict(people))

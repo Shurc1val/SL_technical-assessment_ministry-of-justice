@@ -8,3 +8,6 @@ I have made the following assumptions about valid forms:
     <li> A valid timestamp includes a date and time matching the formats given by the constant strings VALID_DATE_FORMAT and VALID_TIME_FORMAT respectively, in that order and separated by a single space; </li>
     <li> A valid message is a string starting with the character ":", and containing at least one other character that is not a space. </li>
 </ul>
+
+# test_3.py
+I have assumed that when the task says the function "should sum all the numbers at the current time", it means to sum the three two-digit numbers (HH, MM, SS), rather than the six one-digit numbers (H,H,M,M,S,S).
