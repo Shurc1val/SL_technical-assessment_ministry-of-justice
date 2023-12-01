@@ -1,13 +1,6 @@
 
 from datetime import datetime
 
-# [TODO]: step 1
-# Update the is_log_line function below to skip lines that are not valid log lines.
-# Valid log lines have a timestamp, error type, and message. For example, lines 1, 3,
-# 7 and 37 are all examples of lines (from sample.log) that would be filtered out.
-# There's no perfect way to do this: just decide what you think is reasonable to get
-# the test to pass. The only thing you are not allowed to do is filter out log lines
-# based on the exact row numbers you want to remove.
 
 VALID_LOG_LEVELS = (
     "INFO",
@@ -25,7 +18,7 @@ def get_message_from_line(line: str) -> str:
     """
     if not " :" in line:
         return ""
-    
+
     message = " :".join(line.split(" :")[1:])
     if not message.strip():
         return ""
@@ -46,38 +39,37 @@ def validate_timestamp(date_string: str, time_string: str) -> bool:
         return False
 
 
-def get_timestamp_from_line(fields: list[str]) -> str:
+def get_timestamp_from_line(line: str) -> str:
     """
-    Function to find date and time from the given data fields (assuming time follows date exactly),
-    remove them from the list, and return a combined (string) timestamp;
+    Function to find date and time from the given line (assuming time follows date exactly)
+    and return a combined (string) timestamp;
 
     If no valid date and time are found, None is returned.
     """
+    fields = line.split(" :")[0].split(" ")
+
     count = 0
     while count < len(fields) - 1:
         date = fields[count]
         time = fields[count+1]
         if validate_timestamp(date, time):
-            bln_criterion_met = True
-            fields.remove(date)
-            fields.remove(time)
             return date + " " + time
         count += 1
 
     return None
 
 
-def get_logging_level_from_line(fields: list[str]) -> str:
+def get_logging_level_from_line(line: str) -> str:
     """
-    Function to find, remove and return the logging level from the given data fields; returns None
-    if no valid level is found.
+    Function to find, remove and return the logging level from the given line; returns None if no
+    valid level is found.
     """
+    fields = line.split(" :")[0].split(" ")
+
     count = 0
     while count < len(fields):
         if fields[count] in VALID_LOG_LEVELS:
-            logging_level = fields[count]
-            fields.remove(logging_level)
-            return logging_level
+            return fields[count]
         count += 1
     return None
 
@@ -88,19 +80,24 @@ def is_log_line(line):
     """
     line = line.strip()
 
-    if not get_message_from_line(line):
+    message = get_message_from_line(line)
+    if not message:
         return None
-
-    fields = line.split(" :")[0].split(" ")
     
-    if not get_timestamp_from_line(fields):
+    timestamp = get_timestamp_from_line(line)
+    if not timestamp:
         return None
 
-    if not get_logging_level_from_line(fields):
+    logging_level = get_logging_level_from_line(line)
+    if not logging_level:
         return None
+
+    line = line.replace(message, "")
+    line = line.replace(timestamp, "")
+    line = line.replace(logging_level, "")
 
     # Checks if there are fields other than timestamp and logging level before message
-    if fields.count("") != len(fields):
+    if line.strip():
         return None
 
     return True
@@ -118,12 +115,8 @@ def get_dict(line):
     line = line.strip()
 
     message = get_message_from_line(line)
-    
-    fields = line.split(" :")[0].split(" ")
-
-    timestamp = get_timestamp_from_line(fields)
-
-    logging_level = get_logging_level_from_line(fields)
+    timestamp = get_timestamp_from_line(line)
+    logging_level = get_logging_level_from_line(line)
 
     return {
         "timestamp": timestamp,
@@ -169,8 +162,8 @@ if __name__ == "__main__":
                 "STEP 1 FAILURE: step 1 produced unexpecting lines.\n"
                 "Writing to failure.log if you want to compare it to tests/step1.log"
             )
-            with open("step-1-failure-output.log", "w") as f:
-                f.writelines(actual_out)
+            '''with open("step-1-failure-output.log", "w") as f:
+                f.writelines(actual_out)'''
 
     def test_step_2():
         expected = {
