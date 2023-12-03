@@ -10,8 +10,8 @@ import pytest
 def sum_current_time(time_str: str = datetime.now().strftime("%H:%M:%S"),
                      verify_time_input = False) -> int:
     """
-    Returns sum of the numbers in time_str, given in the format %H:%M:%S; defaults to current time
-    if no time is given.
+    Returns sum of the numbers in time_str, given in the format %H:%M:%S; time_str defaults to
+    current time if no time is given.
 
     Optional argument verify_time_input to check if the time_str input is a valid time in the
     correct form; default value is False. If verify_time_input is True, and time_str is invalid,
@@ -51,7 +51,7 @@ def test_sum_current_time_valid_inputs(time_str: str, exp_result):
     """Tests the function sum_current_time for various valid inputs."""
     assert sum_current_time(time_str) == exp_result
     assert sum_current_time(time_str, False) == sum_current_time(time_str, True)
-        # Checks that the verify_time_input parameter does not change the result
+        # ^^ Checks that the verify_time_input parameter does not change the result
 
 
 def test_sum_current_time_no_input():
