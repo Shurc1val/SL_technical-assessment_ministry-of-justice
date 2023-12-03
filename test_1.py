@@ -22,7 +22,7 @@ def get_message_from_line(line: str) -> str:
     message = " :".join(line.split(" :")[1:])
     if not message.strip():
         return ""
-    
+
     return ":" + message
 
 
@@ -74,6 +74,13 @@ def get_logging_level_from_line(line: str) -> str:
     return None
 
 
+# [TODO]: step 1
+# Update the is_log_line function below to skip lines that are not valid log lines.
+# Valid log lines have a timestamp, error type, and message. For example, lines 1, 3,
+# 7 and 37 are all examples of lines (from sample.log) that would be filtered out.
+# There's no perfect way to do this: just decide what you think is reasonable to get
+# the test to pass. The only thing you are not allowed to do is filter out log lines
+# based on the exact row numbers you want to remove.
 def is_log_line(line):
     """
     Takes a log line and returns True if it is a valid log line and returns nothing if it is not;
@@ -83,7 +90,7 @@ def is_log_line(line):
     message = get_message_from_line(line)
     if not message:
         return None
-    
+
     timestamp = get_timestamp_from_line(line)
     if not timestamp:
         return None

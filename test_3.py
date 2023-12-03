@@ -3,8 +3,9 @@
 # current time. For example, 01:02:03 should return 6. Improve and fix the function,
 # and write unit test(s) for it. Use any testing framework you're familiar with.
 
-import pytest
 from datetime import datetime
+import pytest
+
 
 def sum_current_time(time_str: str = datetime.now().strftime("%H:%M:%S"),
                      verify_time_input = False) -> int:
@@ -22,7 +23,7 @@ def sum_current_time(time_str: str = datetime.now().strftime("%H:%M:%S"),
             datetime.strptime(time_str, "%H:%M:%S")
         except (ValueError, TypeError) as error:
             print("Invalid time_str entered: ", error)
-            return -1 
+            return -1
 
     return sum([int(num) for num in time_str.split(":")])
 

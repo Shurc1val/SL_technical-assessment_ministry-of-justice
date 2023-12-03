@@ -71,6 +71,7 @@
 
 from csv import DictReader
 import requests
+import json
 
 PEOPLE_CSV_FILE = "people.csv"
 API_URL = "https://www.find-court-tribunal.service.gov.uk/search/results.json?postcode={}"
@@ -82,25 +83,25 @@ def read_csv(filename: str) -> list[dict]:
         return list(DictReader(file))
 
 
-def get_nearest_courts_from_API(postcode: str) -> list[dict]:
+def get_nearest_courts_from_api(postcode: str) -> list[dict]:
     """
     Returns list of dicts of nearest courts to a given postcode from courts and tribunals finder
     API; if error in getting data from API, an empty list is returned.
     """
-    response = requests.get(API_URL.format(postcode))
+    response = requests.get(API_URL.format(postcode), timeout=10)
     if response.status_code != 200:
-        return []
+        raise ConnectionError("Unable to get data from API")
     return response.json()
 
 
-def format_court_data(type: str, courts: list[dict]):
+def format_court_data(desired_type: str, courts: list[dict]):
     """
     Removes any courts which do not have the desired type, and leaves only the fields name,
     dx_number and distance for each court dictionary.
     """
     courts_to_remove = []
     for i, court in enumerate(courts):
-        if (type not in court.get("types", [])) or (court.get("distance", None) is None):
+        if (desired_type not in court.get("types", [])) or (court.get("distance", None) is None):
             courts_to_remove.append(court)
         else:
             courts[i] = {
@@ -112,13 +113,19 @@ def format_court_data(type: str, courts: list[dict]):
         courts.remove(court)
 
 
+def write_people_and_court_data_to_file(filename: str, people: list[dict]):
+    """Function to write people and court data to json file"""
+    with open(filename, 'w', encoding='utf-8') as file:
+        json.dump(people, file)
+
 
 if __name__ == "__main__":
+
     people = read_csv(PEOPLE_CSV_FILE)
+
     for person in people:
-        nearest_courts = get_nearest_courts_from_API(person['home_postcode'])
+        nearest_courts = get_nearest_courts_from_api(person['home_postcode'])
         format_court_data(person['looking_for_court_type'], nearest_courts)
-        person['nearest_court'] = nearest_courts[0]
-    
-    for person in people:
-        print(person)
+        person['nearest_appropriate_court'] = nearest_courts[0]
+
+        write_people_and_court_data_to_file("people_and_courts.json", people)
